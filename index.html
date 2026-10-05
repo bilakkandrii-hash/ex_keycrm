@@ -1,0 +1,153 @@
+<!doctype html>
+<html lang="uk">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; connect-src https://*.api.keycrm.app; img-src 'self' https: data:; base-uri 'none'; form-action 'none'">
+  <meta name="theme-color" content="#1f6feb">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="EX42 курс">
+  <link rel="apple-touch-icon" href="icon-180.png">
+  <link rel="manifest" href="manifest.webmanifest">
+  <title>EX42 курс</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: system-ui, sans-serif;
+      font-size: 16px;
+      background: #f4f6f9;
+      color: #1a1a1a;
+      padding-top: env(safe-area-inset-top, 0px);
+      padding-bottom: env(safe-area-inset-bottom, 0px);
+    }
+    [hidden] { display: none !important; }
+    .screen { min-height: 100vh; display: flex; flex-direction: column; }
+    header {
+      display: flex; align-items: center; justify-content: space-between; gap: 8px;
+      padding: 12px 16px; background: #1f6feb; color: #fff;
+    }
+    header h1 { font-size: 17px; margin: 0; }
+    main { flex: 1; padding: 16px; display: flex; flex-direction: column; gap: 12px; }
+    label { display: flex; flex-direction: column; gap: 4px; font-weight: 600; }
+    input, select, textarea {
+      padding: 12px; border: 1px solid #ccc; border-radius: 8px; font-size: 16px; background: #fff; color: #1a1a1a;
+    }
+    button {
+      padding: 12px 16px; border: 0; border-radius: 8px; font-size: 15px; cursor: pointer;
+    }
+    button:disabled { opacity: 0.6; cursor: default; }
+    .primary { background: #1f6feb; color: #fff; }
+    .secondary { background: #e8ecf2; color: #1a1a1a; }
+    #create-result { display: flex; flex-direction: column; gap: 12px; }
+    #create-result button { padding: 16px; font-size: 16px; }
+    #leads-new { padding: 16px; font-size: 16px; }
+    #login-form { display: flex; flex-direction: column; gap: 12px; }
+    .header-actions { display: flex; gap: 8px; }
+    .ghost { background: transparent; color: #fff; }
+    .link { background: none; border: 0; color: #1f6feb; padding: 0; text-align: left; }
+    .error { color: #c62828; min-height: 18px; }
+    .status { color: #555; min-height: 18px; }
+    .status.success { color: #2e7d32; }
+    .status.error { color: #c62828; }
+    #leads-list { display: flex; flex-direction: column; gap: 8px; }
+    .lead-row {
+      display: flex; align-items: center; gap: 10px; width: 100%; text-align: left;
+      padding: 12px; background: #fff; border: 1px solid #e0e4ea; border-radius: 10px;
+    }
+    .lead-badge {
+      flex: 0 1 auto; max-width: 38%; padding: 4px 8px; border-radius: 6px; font-size: 12px; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .lead-main { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+    .lead-title { font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .lead-contact { color: #666; font-size: 13px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .lead-count { flex: 0 0 auto; color: #888; font-size: 13px; }
+    .flag { flex: none; width: 20px; height: 14px; object-fit: contain; border: 1px solid #ddd; border-radius: 2px; }
+    #status-mount { display: flex; flex-direction: column; gap: 8px; background: #fff; border: 1px solid #e0e4ea; border-radius: 10px; padding: 12px; }
+    #status-mount .danger { padding: 14px; font-size: 16px; background: #f06b78; color: #fff; }
+    #status-mount .reasons { display: flex; flex-direction: column; gap: 8px; }
+    #rate-mount { display: flex; flex-direction: column; }
+    #rate-mount .rate-form { background: #fff; border: 1px solid #e0e4ea; border-radius: 10px; padding: 12px; }
+    #rate-mount input[name="rate"] { font-size: 18px; }
+    #rate-mount .buttons button { padding: 14px; font-size: 16px; }
+  </style>
+</head>
+<body>
+  <section id="login-screen" class="screen">
+    <header><h1>EX42 · вхід</h1></header>
+    <main>
+      <form id="login-form">
+        <label>Тенант (mops-money)<input id="login-tenant" name="tenant" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false"></label>
+        <label>Логін keyCRM<input id="login-email" name="email" type="email" autocomplete="username"></label>
+        <label>Пароль<input id="login-password" name="password" type="password" autocomplete="current-password"></label>
+        <div id="login-error" class="error"></div>
+        <button id="login-submit" type="submit" class="primary">Увійти</button>
+      </form>
+    </main>
+  </section>
+
+  <section id="leads-screen" class="screen" hidden>
+    <header>
+      <h1 id="leads-tenant-label">EX42</h1>
+      <div class="header-actions">
+        <button id="leads-refresh" class="ghost">Оновити</button>
+        <button id="leads-logout" class="ghost">Вийти</button>
+      </div>
+    </header>
+    <main>
+      <button id="leads-new" class="primary">+ Нова заявка</button>
+      <div id="leads-status" class="status"></div>
+      <div id="leads-error" class="error"></div>
+      <div id="leads-list"></div>
+      <button id="leads-more" class="link" hidden>Показати ще</button>
+    </main>
+  </section>
+
+  <section id="rate-screen" class="screen" hidden>
+    <header>
+      <button id="rate-back" class="ghost">← Назад</button>
+      <h1 id="rate-title">Заявка</h1>
+      <span></span>
+    </header>
+    <main>
+      <div id="status-mount"></div>
+      <div id="rate-mount"></div>
+    </main>
+  </section>
+
+  <section id="create-screen" class="screen" hidden>
+    <header>
+      <button id="create-back" class="ghost">← Назад</button>
+      <h1>Нова заявка</h1>
+      <span></span>
+    </header>
+    <main>
+      <div id="create-mount"></div>
+      <div id="create-result" hidden>
+        <div id="create-result-text" class="status success"></div>
+        <button id="create-open" type="button" class="primary">Відкрити для уточнення курсу</button>
+        <button id="create-to-list" type="button" class="secondary">До списку</button>
+      </div>
+    </main>
+  </section>
+
+  <script src="src/lib/rate.js?v=7"></script>
+  <script src="src/lib/lines.js?v=7"></script>
+  <script src="src/lib/flags.js?v=7"></script>
+  <script src="src/lib/payload.js?v=7"></script>
+  <script src="src/lib/create-lead.js?v=7"></script>
+  <script src="src/lib/rate-rows.js?v=7"></script>
+  <script src="src/lib/session.js?v=7"></script>
+  <script src="src/lib/status-change.js?v=7"></script>
+  <script src="src/lib/leads-list.js?v=7"></script>
+  <script src="src/lib/outcome-text.js?v=7"></script>
+  <script src="src/api.js?v=7"></script>
+  <script src="src/dom.js?v=7"></script>
+  <script src="src/rate-panel.js?v=7"></script>
+  <script src="src/create-panel.js?v=7"></script>
+  <script src="src/session-client.js?v=7"></script>
+  <script src="src/leads-client.js?v=7"></script>
+  <script src="src/app.js?v=7"></script>
+</body>
+</html>
